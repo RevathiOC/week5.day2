@@ -1,0 +1,30 @@
+name: Add PR Checklist
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  update-checklist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update Pull Request Description
+        run: |
+          # Define the checklist
+          CHECKLIST="- [ ] Update documentation if necessary\n- [ ] Run tests to ensure no regressions\n- [ ] Code review has been performed\n- [ ] Dependencies have been updated\n- [ ] Verify backward compatibility"
+
+          # Get the pull request number
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+
+          # Create the updated description with the checklist
+          UPDATED_DESCRIPTION=$(jq --null-input --argjson checklist "$CHECKLIST" '{$checklist}')
+
+          # Update the pull request description
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$UPDATED_DESCRIPTION" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
