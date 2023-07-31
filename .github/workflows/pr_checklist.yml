@@ -12,6 +12,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set up jq
+        run: sudo apt-get install -y jq
+
       - name: Update Pull Request Description
         run: |
           # Define the checklist
@@ -21,7 +24,7 @@ jobs:
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           # Create the updated description with the checklist
-          UPDATED_DESCRIPTION=$(jq --null-input --argjson checklist "$CHECKLIST" '{$checklist}')
+          UPDATED_DESCRIPTION=$(jq -n --arg checklist "$CHECKLIST" '{body: $checklist}')
 
           # Update the pull request description
           curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$UPDATED_DESCRIPTION" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}"
