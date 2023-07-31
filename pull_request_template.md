@@ -1,3 +1,4 @@
 - [ ] update the documentation
 - [ ] Check the value
 - [ ] Have you checked all the file
+- [ ] Is your feature file correct ?
