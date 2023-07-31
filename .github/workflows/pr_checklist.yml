@@ -26,15 +26,15 @@ jobs:
           echo "$CHECKLIST_BODY"
 
           # Check if all checklist items are checked
-          if [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Update documentation if necessary" ]]; then
+          if [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Update documentation if necessary" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Run tests to ensure no regressions" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Run tests to ensure no regressions" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Code review has been performed" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Code review has been performed" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Dependencies have been updated" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Dependencies have been updated" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Verify backward compatibility" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Verify backward compatibility" ]]; then
             exit 1
           fi
 
