@@ -17,26 +17,25 @@ jobs:
 
       - name: Check PR Checklist
         run: |
-          # Get the pull request number and checklist body from the pull request
+          # Get the pull request number
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          CHECKLIST_BODY=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" | jq --raw-output .body)
 
-          # Print the checklist body for debugging
-          echo "Checklist Body:"
-          echo "$CHECKLIST_BODY"
+          # Get the pull request body
+          PR_BODY=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" | jq --raw-output .body)
 
           # Check if all checklist items are checked
-          if [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Update documentation if necessary" ]]; then
+          if [[ ! "$PR_BODY" =~ "- \\[x\\] Update documentation if necessary" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Run tests to ensure no regressions" ]]; then
+          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Run tests to ensure no regressions" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Code review has been performed" ]]; then
+          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Code review has been performed" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Dependencies have been updated" ]]; then
+          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Dependencies have been updated" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Verify backward compatibility" ]]; then
+          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Verify backward compatibility" ]]; then
             exit 1
           fi
+
 
       - name: Run Additional Steps if Checklist is Checked
         run: |
