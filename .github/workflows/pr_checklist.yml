@@ -1,8 +1,8 @@
-name: Add PR Checklist
+name: Update PR Checklist
 
 on:
-  pull_request:
-    types: [opened]
+  issue_comment:
+    types: [created]
 
 jobs:
   update-checklist:
@@ -12,22 +12,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up jq
-        run: sudo apt-get install -y jq
-
-      - name: Update Pull Request Description
+      - name: Check for Trigger Command
         run: |
-          # Define the checklist
-          CHECKLIST="- [ ] Update documentation if necessary\n- [ ] Run tests to ensure no regressions\n- [ ] Code review has been performed\n- [ ] Dependencies have been updated\n- [ ] Verify backward compatibility"
-
           # Get the pull request number
-          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          PR_NUMBER=$(jq --raw-output .issue.pull_request.number "$GITHUB_EVENT_PATH")
 
-          # Create the updated description with the checklist
-          UPDATED_DESCRIPTION=$(jq -n --arg checklist "$CHECKLIST" '{body: $checklist}')
+          # Check if the comment contains the trigger command
+          if jq -e '.comment.body | test("/update-checklist"; "i")' "$GITHUB_EVENT_PATH" > /dev/null; then
+            # Define the checklist
+            CHECKLIST="- [x] Update documentation if necessary\n- [x] Run tests to ensure no regressions\n- [x] Code review has been performed\n- [x] Dependencies have been updated\n- [x] Verify backward compatibility"
 
-          # Update the pull request description
-          curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$UPDATED_DESCRIPTION" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}"
+            # Create the updated description with the checklist
+            UPDATED_DESCRIPTION=$(jq -n --arg checklist "$CHECKLIST" '{body: $checklist}')
 
+            # Update the pull request description
+            curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$UPDATED_DESCRIPTION" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}"
+          fi
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
