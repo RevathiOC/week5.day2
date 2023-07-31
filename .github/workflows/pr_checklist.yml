@@ -21,16 +21,20 @@ jobs:
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           CHECKLIST_BODY=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" | jq --raw-output .body)
 
+          # Print the checklist body for debugging
+          echo "Checklist Body:"
+          echo "$CHECKLIST_BODY"
+
           # Check if all checklist items are checked
           if [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Update documentation if necessary" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Run tests to ensure no regressions" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Run tests to ensure no regressions" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Code review has been performed" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Code review has been performed" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Dependencies have been updated" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Dependencies have been updated" ]]; then
             exit 1
-          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[x\\] Verify backward compatibility" ]]; then
+          elif [[ ! "$CHECKLIST_BODY" =~ "- \\[ \\] Verify backward compatibility" ]]; then
             exit 1
           fi
 
