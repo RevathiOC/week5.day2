@@ -24,17 +24,18 @@ jobs:
           PR_BODY=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" | jq --raw-output .body)
 
           # Check if all checklist items are checked
-          if [[ ! "$PR_BODY" =~ "- \\[x\\] Update documentation if necessary" ]]; then
-            exit 1
-          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Run tests to ensure no regressions" ]]; then
-            exit 1
-          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Code review has been performed" ]]; then
-            exit 1
-          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Dependencies have been updated" ]]; then
-            exit 1
-          elif [[ ! "$PR_BODY" =~ "- \\[x\\] Verify backward compatibility" ]]; then
-            exit 1
-          fi
+          CHECKLIST_ITEMS="- [x] Update documentation if necessary  
+          - [x] Run tests to ensure no regressions
+          - [x] Code review has been performed
+          - [x] Dependencies have been updated
+          - [x] Verify backward compatibility"
+
+          while read -r item; do
+            if [[ ! "$PR_BODY" =~ "$item" ]]; then
+              echo "Error: $item not found in checklist."
+              exit 1
+            fi
+          done <<< "$CHECKLIST_ITEMS"
 
 
       - name: Run Additional Steps if Checklist is Checked
