@@ -14,10 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
         with:
-          python-version: 3.8
+          dotnet-version: 3.1
 
       - name: Get PR Description
         id: pr
@@ -28,22 +28,24 @@ jobs:
                            jq -r '.body')
           echo "::set-output name=description::$PR_DESCRIPTION"
 
-      - name: Check Checklist
+      - name: Run C# Script
         run: |
           PR_DESCRIPTION="${{ steps.pr.outputs.description }}"
           
-          unchecked_items=""
+          uncheckedItems=()
           
           IFS=$'\n'
           for line in $PR_DESCRIPTION; do
-            if [[ "$line" =~ ^\s*-\s+\[ \] ]]; then
-              unchecked_items+="$line\n"
+            if [[ "$line" == *" - [ ] "* ]]; then
+              uncheckedItems+=("$line")
             fi
           done
 
-          if [ -n "$unchecked_items" ]; then
+          if [ ${#uncheckedItems[@]} -gt 0 ]; then
             echo "Unchecked items detected:"
-            echo -e "$unchecked_items"
+            for item in "${uncheckedItems[@]}"; do
+              echo "$item"
+            done
             exit 1
           else
             echo "All checklist items are checked"
