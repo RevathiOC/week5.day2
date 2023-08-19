@@ -19,14 +19,11 @@ jobs:
         run: |
           pr_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
           
-          unchecked_items=$(echo "$pr_description" | grep -oE '\[ \] .+' | sed 's/^\[ \] //')
-          
-          if [[ -n "$unchecked_items" ]]; then
+          if [[ "$pr_description" =~ "- \\[x\\]" ]]; then
             echo "Unchecked items detected:"
-            echo "$unchecked_items"
+            echo "$pr_description" | grep -oP '- \[ \] \K.+' | sed '/^\s*$/d'
             # Send a notification or take other actions here
             exit 1
           else
             echo "All checklist items are checked"
           fi
-          echo "All checklist items are checked"
