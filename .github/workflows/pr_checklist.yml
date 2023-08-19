@@ -18,17 +18,13 @@ jobs:
       - name: Check checklist
         run: |
           pr_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
-          checklist_pattern='\[([ x])\] (.+)'
-
+          unchecked_checklist_pattern='\[[ ]\] (.+)'
+      
           while IFS= read -r line; do
-          if [[ $line =~ $checklist_pattern ]]; then
-          status="${BASH_REMATCH[1]}"
-          item="${BASH_REMATCH[2]}"
-        
-          if [ "$status" != "x" ]; then
+          if [[ $line =~ $unchecked_checklist_pattern ]]; then
+          item="${BASH_REMATCH[1]}"
           echo "Item '$item' is not checked"
           exit 1
-          fi
           fi
           done <<< "$pr_description"
 
