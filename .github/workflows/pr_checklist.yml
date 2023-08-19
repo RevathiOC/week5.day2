@@ -23,21 +23,21 @@ jobs:
           python3 - <<EOL
           import re
           import sys
-
+          
           pr_description = '''$pr_description'''
-
+          
           unchecked_items = []
           lines = pr_description.split('\n')
-
+          
           for line in lines:
-          if re.match(r'^\s*-\s+\[ \]', line):
-          unchecked_items.append(line.strip())
-
+              if re.match(r'^\s*-\s+\[ \]', line):
+                  unchecked_items.append(line.strip())
+          
           if unchecked_items:
-          print("Unchecked items detected:")
-          for item in unchecked_items:
-           print(item)
-          sys.exit(1)
+              print("Unchecked items detected:")
+              for item in unchecked_items:
+                  print(item)
+              sys.exit(1)
           else:
-          print("All checklist items are checked")
+              print("All checklist items are checked")
           EOL
