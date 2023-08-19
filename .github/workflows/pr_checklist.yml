@@ -17,7 +17,7 @@ jobs:
 
       - name: Check checklist
         run: |
-          r_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
+          pr_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
 
           if [[ "$pr_description" =~ ^\s*\-\s+\[ \] ]]; then
             unchecked_items=$(echo "$pr_description" | grep -oP '^\s*\-\s+\[ \] \K.+' | sed '/^\s*$/d')
