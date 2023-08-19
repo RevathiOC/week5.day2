@@ -35,15 +35,15 @@ jobs:
           unchecked_items=""
           
           IFS=$'\n'
-          for line in ${PR_DESCRIPTION}; do
-            if [[ $line =~ ^\s*-\s+\[ \] ]]; then
+          for line in $PR_DESCRIPTION; do
+            if [[ "$line" =~ ^\s*-\s+\[ \] ]]; then
               unchecked_items+="$line\n"
             fi
           done
 
-          if [[ -n "${unchecked_items}" ]]; then
+          if [ -n "$unchecked_items" ]; then
             echo "Unchecked items detected:"
-            echo -e "${unchecked_items}"
+            echo -e "$unchecked_items"
             exit 1
           else
             echo "All checklist items are checked"
