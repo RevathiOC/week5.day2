@@ -32,16 +32,19 @@ jobs:
         run: |
           PR_DESCRIPTION="${{ steps.pr.outputs.description }}"
           
-          unchecked_items = []
+          unchecked_items=""
+          
+          IFS=$'\n'
+          for line in ${PR_DESCRIPTION}; do
+            if [[ $line =~ ^\s*-\s+\[ \] ]]; then
+              unchecked_items+="$line\n"
+            fi
+          done
 
-          for line in PR_DESCRIPTION.split('\n'):
-              if line.strip().startswith('- [ ]'):
-                  unchecked_items.append(line.strip()[6:])
-
-          if unchecked_items:
-              print("Unchecked items detected:")
-              for item in unchecked_items:
-                  print(item)
-              exit(1)
-          else:
-              print("All checklist items are checked")
+          if [[ -n "${unchecked_items}" ]]; then
+            echo "Unchecked items detected:"
+            echo -e "${unchecked_items}"
+            exit 1
+          else
+            echo "All checklist items are checked"
+          fi
