@@ -17,15 +17,22 @@ jobs:
 
       - name: Check checklist
         run: |
-          pr_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
+              pr_description=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
 
-          if [[ "$pr_description" =~ ^\s*\-\s+\[ \] ]]; then
-            unchecked_items=$(echo "$pr_description" | grep -oP '^\s*\-\s+\[ \] \K.+' | sed '/^\s*$/d')
+              unchecked_items=""
+              checked_items=$(echo "$pr_description" | grep -oP '^\s*\-\s+\[x\] \K.+' | sed '/^\s*$/d')
 
-            echo "Unchecked items detected:"
-            echo "$unchecked_items"
-            # Send a notification or take other actions here
-            exit 1
-          else
-            echo "All checklist items are checked"
-          fi
+              while IFS= read -r line; do
+              if [[ "$line" =~ ^\s*\-\s+\[ \] ]]; then
+              unchecked_items+="$line\n"
+              fi
+              done <<< "$pr_description"
+
+              if [[ -n "$unchecked_items" ]]; then
+              echo "Unchecked items detected:"
+              echo -e "$unchecked_items"
+              # Send a notification or take other actions here
+              exit 1
+              else
+              echo "All checklist items are checked"
+              fi
