@@ -25,11 +25,21 @@ jobs:
 
       - name: Validate Checklist
         run: |
-          uncheckedItemCount=$(echo "${{ steps.pr.outputs.pr_description }}" | grep -c "\[ \]")
+          uncheckedItems=()
+
+          while IFS= read -r line; do
+            if [[ "$line" =~ \[ \] ]]; then
+              uncheckedItems+=("$line")
+            fi
+          done <<< "${{ steps.pr.outputs.pr_description }}"
+
+          uncheckedItemCount=${#uncheckedItems[@]}
 
           if [ "$uncheckedItemCount" -gt 0 ]; then
             echo "Unchecked items detected in PR checklist:"
-            echo "${{ steps.pr.outputs.pr_description }}" | grep "\[ \]"
+            for item in "${uncheckedItems[@]}"; do
+              echo "$item"
+            done
             exit 1
           else
             echo "All checklist items are checked in PR"
