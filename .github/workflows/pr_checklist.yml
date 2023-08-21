@@ -1,52 +1,49 @@
-name: Checklist Checks
+name: Validate PR Checklist
 
 on:
   pull_request:
     types:
-      - opened
       - synchronize
 
 jobs:
-  checklist_checks:
+  validate_checklist:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 3.1
+      - name: Set up jq
+        run: sudo apt-get install -y jq
 
-      - name: Get PR Description
+      - name: Get Pull Request Description
         id: pr
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           PR_DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}" | \
                            jq -r '.body')
-          echo "::set-output name=description::$PR_DESCRIPTION"
+          echo "PR_DESCRIPTION=$PR_DESCRIPTION" >> $GITHUB_ENV
 
-      - name: Run C# Script
+      - name: Validate Checklist
         run: |
-          PR_DESCRIPTION="${{ steps.pr.outputs.description }}"
-          
+          PR_DESCRIPTION="${{ env.PR_DESCRIPTION }}"
+
           uncheckedItems=()
-          
+
           IFS=$'\n'
-          for line in $PR_DESCRIPTION; do
+          while IFS= read -r line; do
             if [[ "$line" == *" - [ ] "* ]]; then
               uncheckedItems+=("$line")
             fi
-          done
+          done <<< "$PR_DESCRIPTION"
 
           if [ ${#uncheckedItems[@]} -gt 0 ]; then
-            echo "Unchecked items detected:"
+            echo "Unchecked items detected in PR checklist:"
             for item in "${uncheckedItems[@]}"; do
               echo "$item"
             done
             exit 1
           else
-            echo "All checklist items are checked"
+            echo "All checklist items are checked in PR"
           fi
