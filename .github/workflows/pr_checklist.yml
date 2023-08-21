@@ -27,7 +27,7 @@ jobs:
           uncheckedItems=()
 
           while IFS= read -r line; do
-            if [[ "$line" == *"[ ]"* ]]; then
+            if [[ "$line" =~ \[ \] ]]; then
               uncheckedItems+=("$line")
             fi
           done <<< "$PR_DESCRIPTION"
