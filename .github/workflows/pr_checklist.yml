@@ -36,7 +36,6 @@ jobs:
           done <<< "$PR_DESCRIPTION"
           
           if [ "${#uncheckedItems[@]}" -gt 0 ]; then
-          then
             echo "Unchecked items detected in PR checklist:"
             for item in "${uncheckedItems[@]}"; do
               echo "$item"
