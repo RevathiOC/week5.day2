@@ -32,7 +32,9 @@ jobs:
             fi
           done <<< "$PR_DESCRIPTION"
 
-          if [ ${#uncheckedItems[@]} -gt 0 ]; then
+          uncheckedItemCount=${#uncheckedItems[@]}
+
+          if [ "$uncheckedItemCount" -gt 0 ]; then
             echo "Unchecked items detected in PR checklist:"
             for item in "${uncheckedItems[@]}"; do
               echo "$item"
