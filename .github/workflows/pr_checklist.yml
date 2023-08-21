@@ -3,8 +3,8 @@ name: Validate Checklist
 on:
   pull_request:
     types:
-      - synchronize
       - opened
+      - synchronize
 
 jobs:
   validate_checklist:
@@ -14,16 +14,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Get PR Description
+        run: |
+          PR_DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                           "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" | \
+                           jq -r '.body')
+          echo "::set-env name=PR_DESCRIPTION::$PR_DESCRIPTION"
+
       - name: Validate Checklist
         run: |
-          unchecked_items=$(echo "$PR_DESCRIPTION" | grep -o '\[ \] .*')
-          if [ -n "$unchecked_items" ]; then
+          uncheckedItems=()
+
+          while IFS= read -r line; do
+            if [[ "$line" == *" - [ ] "* ]]; then
+              uncheckedItems+=("$line")
+            fi
+          done <<< "${{ env.PR_DESCRIPTION }}"
+
+          if [ ${#uncheckedItems[@]} -gt 0 ]; then
             echo "Unchecked items detected in PR checklist:"
-            echo "$unchecked_items"
+            for item in "${uncheckedItems[@]}"; do
+              echo "$item"
+            done
             exit 1
           else
             echo "All checklist items are checked in PR"
           fi
-
-    env:
-      PR_DESCRIPTION: ${{ github.event.pull_request.body }}
