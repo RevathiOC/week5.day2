@@ -27,21 +27,21 @@ jobs:
         run: |
           pr_description="${{ steps.get_pr_description.outputs.PR_DESCRIPTION }}"
 
-          uncheckedItems=()
-          while read -r line; do
+          unchecked_items=()
+          while IFS= read -r line; do
             if [[ "$line" =~ "- \[ \] " ]]; then
-              uncheckedItems+=("${line//- \[ \] /}")
+              item=$(echo "$line" | sed -E 's/^- \[\ \] //')
+              unchecked_items+=("$item")
             fi
           done <<< "$pr_description"
 
-          uncheckedItemCount=${#uncheckedItems[@]}
-          if [ $uncheckedItemCount -gt 0 ]; then
-            for item in "${uncheckedItems[@]}"; do
-              if ! echo "$pr_description" | grep -qF "$item"; then
-                echo "Error: '$item' not found in checklist."
-                exit 1
-              fi
+          unchecked_count=${#unchecked_items[@]}
+          if [ $unchecked_count -gt 0 ]; then
+            echo "Unchecked items detected:"
+            for item in "${unchecked_items[@]}"; do
+              echo "$item"
             done
+            exit 1
           else
             echo "All checklist items are checked in PR"
           fi
