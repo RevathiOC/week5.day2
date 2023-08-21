@@ -24,7 +24,7 @@ jobs:
           uncheckedItems=()
 
           # Define a pattern to match checklist items
-          checklist_pattern="- \[ \] (.+)"
+          checklist_pattern="^\s*- \[ \] (.+)"
 
           while IFS= read -r line; do
             if [[ $line =~ $checklist_pattern ]]; then
