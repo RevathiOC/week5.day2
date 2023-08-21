@@ -21,10 +21,16 @@ jobs:
           PR_DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}" | \
                            jq -r '.body')
+          echo "::set-output name=pr_description::$PR_DESCRIPTION"
 
       - name: Validate Checklist
         run: |
           uncheckedItems=()
+          PR_DESCRIPTION="${{ steps.pr.outputs.pr_description }}"
+
+          echo "PR Description:"
+          echo "$PR_DESCRIPTION"
+          echo "----------------------"
 
           while IFS= read -r line; do
             if [[ "$line" == *" - [ ] "* ]]; then
@@ -32,4 +38,12 @@ jobs:
             fi
           done <<< "$PR_DESCRIPTION"
 
-          if [ ${#uncheckedItems[@]} -
+          if [ "${#uncheckedItems[@]}" -gt 0 ]; then
+            echo "Unchecked items detected in PR checklist:"
+            for item in "${uncheckedItems[@]}"; do
+              echo "$item"
+            done
+            exit 1
+          else
+            echo "All checklist items are checked in PR"
+          fi
