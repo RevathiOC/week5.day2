@@ -25,29 +25,11 @@ jobs:
 
       - name: Validate Checklist
         run: |
-          uncheckedItems=$(python - <<EOF
-          import sys
-          import re
-          
-          pr_description = """${{ steps.pr.outputs.pr_description }}"""
-          unchecked_items = []
-          
-          lines = pr_description.splitlines()
-          for line in lines:
-              if re.search(r"\[ \]", line):
-                  unchecked_items.append(line)
-          
-          if unchecked_items:
-              print("Unchecked items detected in PR checklist:")
-              for item in unchecked_items:
-                  print(item)
-              sys.exit(1)
-          else:
-              print("All checklist items are checked in PR")
-          EOF
-                    )
-          
-                    if [ -n "$uncheckedItems" ]; then
-                      echo "$uncheckedItems"
-                      exit 1
-                    fi
+          unchecked_items=$(echo "${{ steps.pr.outputs.pr_description }}" | grep -o '\[ \] .*')
+          if [ -n "$unchecked_items" ]; then
+            echo "Unchecked items detected in PR checklist:"
+            echo "$unchecked_items"
+            exit 1
+          else
+            echo "All checklist items are checked in PR"
+          fi
