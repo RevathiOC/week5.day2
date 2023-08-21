@@ -31,6 +31,7 @@ jobs:
               item="${BASH_REMATCH[1]}"
               if [[ ! "$PR_DESCRIPTION" =~ "$item" ]]; then
                 uncheckedItems+=("$item")
+                echo "uncheckedItems:$uncheckedItems"
               fi
             fi
           done <<< "$PR_DESCRIPTION"
