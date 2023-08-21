@@ -15,30 +15,34 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get PR Description
-        id: get_pr_description
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
           PR_DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                           "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}" | \
+                           "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" | \
                            jq -r '.body')
-          echo "PR_DESCRIPTION=$PR_DESCRIPTION" >> $GITHUB_ENV
+          echo "::set-env name=PR_DESCRIPTION::$PR_DESCRIPTION"
 
       - name: Validate Checklist
         run: |
-          pr_description="${{ steps.get_pr_description.outputs.PR_DESCRIPTION }}"
+          PR_DESCRIPTION="${{ steps.get_pr_description.outputs.PR_DESCRIPTION }}"
 
-          unchecked_items=()
+          uncheckedItems=()
+
+          # Define a pattern to match checklist items
+          checklist_pattern="- \[ \] (.+)"
+
           while IFS= read -r line; do
-            if [[ "$line" =~ "- \[ \] " ]]; then
-              item=$(echo "$line" | sed -E 's/^- \[\ \] //')
-              unchecked_items+=("$item")
+            if [[ $line =~ $checklist_pattern ]]; then
+              item="${BASH_REMATCH[1]}"
+              if [[ ! "$PR_DESCRIPTION" =~ "$item" ]]; then
+                uncheckedItems+=("$item")
+              fi
             fi
-          done <<< "$pr_description"
-
-          unchecked_count=${#unchecked_items[@]}
-          if [ $unchecked_count -gt 0 ]; then
-            echo "Unchecked items detected:"
-            for item in "${unchecked_items[@]}"; do
+          done <<< "$PR_DESCRIPTION"
+          
+          if [ "${#uncheckedItems[@]}" -gt 0 ]; then
+          then
+            echo "Unchecked items detected in PR checklist:"
+            for item in "${uncheckedItems[@]}"; do
               echo "$item"
             done
             exit 1
