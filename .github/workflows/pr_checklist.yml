@@ -1,4 +1,4 @@
-name: Validate PR Checklist
+name: Checklist Checks
 
 on:
   pull_request:
@@ -7,44 +7,34 @@ on:
       - synchronize
 
 jobs:
-  validate_checklist:
+  checklist_checks:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up jq
-        run: sudo apt-get install -y jq
-
-      - name: Get Pull Request Description
+      - name: Get PR Description
         id: pr
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          PR_DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                           "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}" | \
-                           jq -r '.body')
-          echo "PR_DESCRIPTION=$PR_DESCRIPTION" >> $GITHUB_ENV
+        run: echo "PR_DESCRIPTION=${{ github.event.pull_request.body }}" >> $GITHUB_ENV
 
-      - name: Validate Checklist
+      - name: Check Checklist
         run: |
-          PR_DESCRIPTION="${{ env.PR_DESCRIPTION }}"
-
           uncheckedItems=()
 
           IFS=$'\n'
-          while IFS= read -r line; do
+          for line in "${{ env.PR_DESCRIPTION }}"; do
             if [[ "$line" == *" - [ ] "* ]]; then
               uncheckedItems+=("$line")
             fi
-          done <<< "$PR_DESCRIPTION"
+          done
 
           if [ ${#uncheckedItems[@]} -gt 0 ]; then
-            echo "Unchecked items detected in PR checklist:"
+            echo "Unchecked items detected:"
             for item in "${uncheckedItems[@]}"; do
               echo "$item"
             done
             exit 1
           else
-            echo "All checklist items are checked in PR"
+            echo "All checklist items are checked"
           fi
